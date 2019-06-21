@@ -15,3 +15,15 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+
+
+class Feed(models.Model):
+    ''' Модель сущности персональной ленты пользователя.
+    Она нужна, в основном для того, чтобы хранить флаг 
+    'read' - прочитано/нерпочитано. 
+    Каждая запись ссылается на один пост.'''
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE,
+        related_name='news_feed')
+    post = models.OneToOneField(Post, on_delete=models.CASCADE)
+    read = models.BooleanField()
