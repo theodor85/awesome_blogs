@@ -8,9 +8,10 @@ class Post(models.Model):
     title = models.CharField(max_length=100, verbose_name='Заголовок')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True,
         verbose_name='Опубликовано')
+    author = models.ForeignKey('users.User', on_delete=models.CASCADE,
+        related_name='posts')
 
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
-    
