@@ -11,6 +11,9 @@ class Post(models.Model):
     author = models.ForeignKey('users.User', on_delete=models.CASCADE,
         related_name='posts')
 
+    def __str__(self):
+        return '%s - %s' % (self.author.name, self.title)
+
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
