@@ -1,1 +1,18 @@
 {% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mb-2 p-3">
+    <h2>Все посты</h2>
+    <ul class="list-unstyled">
+        {% for post in posts %}
+        <li class="my-5 p-3 border">
+            <a href="{% url 'blogs:detail' pk=post.pk %}">{{ post.title }}</a>
+            <p class="text-right font-weight-bold">
+                Автор: <a href="{% url 'blogs:userposts' post.author.name %}">{{ post.author.name }}</a>
+            </p> 
+            <p class="text-right font-italic">Опубликовано: {{ post.created_at }}</p>   
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}

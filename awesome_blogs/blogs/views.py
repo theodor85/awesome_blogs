@@ -1,11 +1,16 @@
 from django.shortcuts import render
 from django.views.generic.base import View
+from django.views.generic.list import ListView
+
+from .models import Post
 
 
-class AllPostsView(View):
+class AllPostsView(ListView):
     ''' Выводит все посты в обратном хронологическом порядке.
     Нужно для страницы Home. ''' 
-    pass
+    model = Post
+    template_name = 'pages/home.html'
+    context_object_name = 'posts'
 
 
 class FeedView(View):
