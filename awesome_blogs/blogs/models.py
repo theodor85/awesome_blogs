@@ -22,7 +22,7 @@ class Post(models.Model):
 
 class Feed(models.Model):
     ''' Модель сущности персональной ленты пользователя.
-    Она нужна, в основном для того, чтобы хранить флаг 
+    Она нужна, в том числе для того, чтобы хранить флаг 
     'read' - прочитано/нерпочитано. 
     Каждая запись ссылается на один пост.'''
 
@@ -30,3 +30,12 @@ class Feed(models.Model):
         related_name='news_feed')
     post = models.OneToOneField(Post, on_delete=models.CASCADE)
     read = models.BooleanField()
+
+
+class Subscriptions(models.Model):
+    ''' Модель подписок пользователя. '''
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE,
+        related_name='my_subscriptions')
+    subscribe_to = models.OneToOneField('users.User', 
+        on_delete=models.CASCADE)
