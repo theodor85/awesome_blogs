@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic.base import View
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 
 from .models import Post, Subscriptions
 from .forms import Subscriptions_formset
@@ -87,8 +88,30 @@ class SubscriptionsView(LoginRequiredMixin, View):
     #----- POST ---------
 
     def post(self, request):
+        ''' Принимает набор форм. Сохраняет подписки пользователя.
+        Формирует ленту пользователя на основании подписок. '''
+
         subscriptions_formset = Subscriptions_formset(request.POST)
-        context = {'a': 'Привет'}
+
+        if subscriptions_formset.is_valid():
+
+            # удаляем все подписки пользователя
+            Subscriptions.objects.filter(user=self.request.user).delete()
+            # формируем список подписок заново
+
+            for form in subscriptions_formset:
+                user_subscribe_to = User.objects.get(name=form.cleaned_data['username'])
+                if form.cleaned_data['subscribe']: # новая подписка
+                        new_sub = Subscriptions()
+                        new_sub.user = self.request.user
+                        new_sub.subscribe_to = user_subscribe_to
+                        new_sub.save()
+
+            messages.add_message(request, messages.SUCCESS, 
+                'Подписки сохранены')
+        else:
+            messages.add_message(request, messages.WARNING, 
+                'Подписки не сохранены!')
+
+        context = {'formset': subscriptions_formset}
         return render(request, 'pages/subscriptions.html', context)
-        # if subscriptions_formset.is_valid():
-        #     subscriptions_formset.save()

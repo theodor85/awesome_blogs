@@ -37,5 +37,8 @@ class Subscriptions(models.Model):
 
     user = models.ForeignKey('users.User', on_delete=models.CASCADE,
         related_name='my_subscriptions')
-    subscribe_to = models.OneToOneField('users.User', 
+    subscribe_to = models.ForeignKey('users.User', 
         on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'Подписка id=%s %s на блог %s' % (str(self.id), self.user.name, self.subscribe_to.name)
