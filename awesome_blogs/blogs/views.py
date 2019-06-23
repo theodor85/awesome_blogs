@@ -1,5 +1,3 @@
-from itertools import zip_longest
-
 from django.shortcuts import render, redirect
 from django.views.generic.base import View
 from django.views.generic.list import ListView
@@ -52,21 +50,23 @@ class SubscriptionsView(LoginRequiredMixin, View):
     #----- GET ---------
 
     def get(self, request):
-        '''  '''
+        ''' Выводит с помощью набора форм список всех пользователей
+        и ставит галочки у тех, на кого подписан текущий пользователь. '''
+        
         self.get_all_users_except_self_and_admins()
         self.get_user_subscribe_to()
         self.set_initial_for_formset()
         context = self.get_context_with_formset()
         return render(request, 'pages/subscriptions.html', context)
 
+    def get_all_users_except_self_and_admins(self):
+        self.all_users = User.objects.exclude(name=self.request.user.name)
+        self.all_users = self.all_users.exclude(is_staff=True)
+
     def get_user_subscribe_to(self):
         ''' На кого текущий юзер подписан? '''
         my_subscriptions = Subscriptions.objects.filter(user=self.request.user)
         self.users_subscriptions = [sub.subscribe_to for sub in my_subscriptions]
-
-    def get_all_users_except_self_and_admins(self):
-        self.all_users = User.objects.exclude(name=self.request.user.name)
-        self.all_users = self.all_users.exclude(is_staff=True)
 
     def set_initial_for_formset(self):
         ''' Формируем список из всех имен пользователей,
