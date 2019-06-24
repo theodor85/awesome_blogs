@@ -15,8 +15,17 @@ from awesome_blogs.users.models import User
 # подключаем обработчик к сигналу
 post_save.connect(send_notifications_and_refresh_feed)
 
+class PaginatorMixin:
+    ''' Класс-примесь для реализации пагинатора в ListView '''
+    paginate_by = 5
 
-class AllPostsView(ListView):
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        paginator = context['paginator']
+        context['page_range']= range(1, paginator.num_pages+1)
+        return context
+
+class AllPostsView(PaginatorMixin, ListView):
     ''' Выводит все посты в обратном хронологическом порядке.
     Нужно для страницы Home. ''' 
     model = Post
@@ -24,7 +33,7 @@ class AllPostsView(ListView):
     context_object_name = 'posts'
 
 
-class FeedView(LoginRequiredMixin, ListView):
+class FeedView(LoginRequiredMixin, PaginatorMixin, ListView):
     ''' Отвечает за вывод новостной ленты конкретного пользователя.
     Реализует пометку прочитанного. '''
     
@@ -37,12 +46,13 @@ class FeedView(LoginRequiredMixin, ListView):
         return feeds
 
 
-class UserPostList(ListView):
+class UserPostList(PaginatorMixin, ListView):
     ''' Базовый класс для вывода списка постов одного пользователя
      '''
     model = Post
     template_name = 'pages/post_list.html'
     context_object_name = 'posts'
+
 
 class UserPostsView(UserPostList):
     ''' Выводит список постов одного пользователя. '''
