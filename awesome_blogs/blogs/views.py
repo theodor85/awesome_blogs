@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import View
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -216,3 +216,23 @@ class SubscriptionsView(LoginRequiredMixin, View):
         feed_to_del = self.request.user.news_feed.all()
         feed_to_del = feed_to_del.filter(post__author=user_subscribe_to)
         feed_to_del.delete()
+
+
+class MarkReadView(LoginRequiredMixin, View):
+    ''' Помечает элемент ленты прочитанным. '''
+
+    def post(self, request, pk):
+        feed = get_object_or_404(Feed, pk=pk)
+        feed.read = True
+        feed.save()
+        return redirect('blogs:feed')
+
+
+class UnMarkReadView(LoginRequiredMixin, View):
+    ''' Помечает элемент ленты непрочитанным. '''
+
+    def post(self, request, pk):
+        feed = get_object_or_404(Feed, pk=pk)
+        feed.read = False
+        feed.save()
+        return redirect('blogs:feed')

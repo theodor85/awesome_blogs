@@ -8,9 +8,17 @@
         <li class="my-5 p-3 border">
             <a href="{% url 'blogs:detail' pk=feed.post.pk %}">{{ feed.post.title }}</a>
             {% if feed.read  %}
-                <p class="text-right font-italic">Прочитано</p>
+                <p class="font-italic">Прочитано</p>
+                <form action="{% url 'blogs:unread' pk=feed.pk %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="Отметить непрочитанным">    
+                </form>
             {% else %}
                 <p class="font-weight-bold">Непрочитано</p>
+                <form action="{% url 'blogs:read' pk=feed.pk %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="Отметить прочитанным">    
+                </form>
             {% endif  %}
             <p class="text-right font-weight-bold">
                 Автор: <a href="{% url 'blogs:userposts' feed.post.author.name %}">{{ feed.post.author.name }}</a>

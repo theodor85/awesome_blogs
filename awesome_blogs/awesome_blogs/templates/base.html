@@ -82,7 +82,9 @@
               <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
           {% endfor %}
       {% endif %}
-
+      {% if user.is_authenticated %}
+        <p>Вы вошли как {{ user.name }}</p>
+      {% endif %}
       {% block content %}
         <p>Use this document as a way to quick start any new project.</p>
       {% endblock content %}
