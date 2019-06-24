@@ -18,3 +18,8 @@
 Админ-панель:
 
     http://0.0.0.0:8000/admin
+
+Создание суперпользователя:
+------------------------
+
+    docker-compose -f local.yml run django python manage.py createsuperuser
