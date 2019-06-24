@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import View
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.db.models.signals import post_save
 
@@ -248,3 +249,23 @@ class UnMarkReadView(LoginRequiredMixin, View):
         feed.read = False
         feed.save()
         return redirect('blogs:feed')
+
+
+class AuthMixin(LoginRequiredMixin, UserPassesTestMixin):
+    ''' Примесь для DeletePostView и UpdatePostView.
+    Реализует разграничение доступа.'''
+    def test_func(self):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'] )
+        return self.request.user == post.author
+
+class DeletePostView(AuthMixin, DeleteView):
+    model = Post
+    success_url = '/'
+    template_name = 'pages/delete_confirm_post.html'
+
+
+class UpdatePostView(AuthMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    success_url = '/'
+    template_name = 'pages/create_post.html'

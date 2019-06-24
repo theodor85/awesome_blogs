@@ -6,12 +6,19 @@
     <p class="text-right font-weight-bold">
         Автор: {{ post.author }}
     </p>
-    <p class="border">
+    <p class="border p-3">
         {{ post.content }}
     </p>
     <p class="text-right font-italic">
         Опубликовано: {{ post.created_at }}
     </p>
-    
+    {% if request.user.is_authenticated %}
+        {% if request.user == post.author %}
+        <p>
+            <a href="{% url 'blogs:delete' pk=post.pk %}">Удалить</a>
+            <a href="{% url 'blogs:update' pk=post.pk %}">Изменить</a>
+        </p>   
+        {% endif %}
+    {% endif %}
 </div>
 {% endblock content %}
