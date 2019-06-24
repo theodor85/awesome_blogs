@@ -21,13 +21,13 @@ class FeedView(LoginRequiredMixin, ListView):
     ''' Отвечает за вывод новостной ленты конкретного пользователя.
     Реализует пометку прочитанного. '''
     
-    template_name = 'pages/home.html'
-    context_object_name = 'posts'
+    template_name = 'pages/feed.html'
+    context_object_name = 'feeds'
 
-    # def get_queryset(self):
-    #     feed = Feed.objects.filter(user=self.request.user)
-    #     posts = feed.
-    #     return 
+    def get_queryset(self):
+        feeds = self.request.user.news_feed.all()
+        feeds = feeds.order_by('-post__created_at')
+        return feeds
 
 
 class UserPostsView(View):

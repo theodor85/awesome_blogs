@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mb-2 p-3">
+    <h2>Моя лента</h2>
+    <ul class="list-unstyled">
+        {% for feed in feeds %}
+        <li class="my-5 p-3 border">
+            <a href="{% url 'blogs:detail' pk=feed.post.pk %}">{{ feed.post.title }}</a>
+            {% if feed.read  %}
+                <p class="text-right font-italic">Прочитано</p>
+            {% else %}
+                <p class="font-weight-bold">Непрочитано</p>
+            {% endif  %}
+            <p class="text-right font-weight-bold">
+                Автор: <a href="{% url 'blogs:userposts' feed.post.author.name %}">{{ feed.post.author.name }}</a>
+            </p> 
+            <p class="text-right font-italic">Опубликовано: {{ feed.post.created_at }}</p>   
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}
