@@ -30,14 +30,34 @@ class FeedView(LoginRequiredMixin, ListView):
         return feeds
 
 
-class UserPostsView(View):
+class UserPostsView(ListView):
     ''' Выводит список постов одного пользователя. '''
-    pass
+    model = Post
+    template_name = 'pages/post_list.html'
+    context_object_name = 'posts'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['username']= self.kwargs['username']
+        return context
+
+    def get_queryset(self):
+        return Post.objects.filter(author__name=self.kwargs['username'])
 
 
-class MyPostsView(View):
+class MyPostsView(LoginRequiredMixin, ListView):
     ''' Выводит посты авторизованного пользователя. '''
-    pass
+    model = Post
+    template_name = 'pages/post_list.html'
+    context_object_name = 'posts'
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['username']= self.request.user.name
+        return context
+
+    def get_queryset(self):
+        return self.request.user.posts.all()
 
 
 class AddPostView(View):
