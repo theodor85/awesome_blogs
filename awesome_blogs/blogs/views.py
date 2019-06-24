@@ -3,10 +3,16 @@ from django.views.generic.base import View
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db.models.signals import post_save
 
 from .models import Post, Subscriptions, Feed
 from .forms import Subscriptions_formset, PostForm
+from .signals import send_notifications_and_refresh_feed
 from awesome_blogs.users.models import User
+
+
+# подключаем обработчик к сигналу
+post_save.connect(send_notifications_and_refresh_feed)
 
 
 class AllPostsView(ListView):
