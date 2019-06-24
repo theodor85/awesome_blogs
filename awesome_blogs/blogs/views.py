@@ -4,7 +4,7 @@ from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 
-from .models import Post, Subscriptions
+from .models import Post, Subscriptions, Feed
 from .forms import Subscriptions_formset
 from awesome_blogs.users.models import User
 
@@ -17,11 +17,17 @@ class AllPostsView(ListView):
     context_object_name = 'posts'
 
 
-class FeedView(View):
+class FeedView(LoginRequiredMixin, ListView):
     ''' Отвечает за вывод новостной ленты конкретного пользователя.
     Реализует пометку прочитанного. '''
-    def get(self, request):
-        return render(request, 'pages/subscriptions.html', {'a': 'DEBUG - FEED'})
+    
+    template_name = 'pages/home.html'
+    context_object_name = 'posts'
+
+    # def get_queryset(self):
+    #     feed = Feed.objects.filter(user=self.request.user)
+    #     posts = feed.
+    #     return 
 
 
 class UserPostsView(View):
@@ -91,27 +97,74 @@ class SubscriptionsView(LoginRequiredMixin, View):
         ''' Принимает набор форм. Сохраняет подписки пользователя.
         Формирует ленту пользователя на основании подписок. '''
 
-        subscriptions_formset = Subscriptions_formset(request.POST)
-
-        if subscriptions_formset.is_valid():
-
-            # удаляем все подписки пользователя
-            Subscriptions.objects.filter(user=self.request.user).delete()
-            # формируем список подписок заново
-
-            for form in subscriptions_formset:
-                user_subscribe_to = User.objects.get(name=form.cleaned_data['username'])
-                if form.cleaned_data['subscribe']: # новая подписка
-                        new_sub = Subscriptions()
-                        new_sub.user = self.request.user
-                        new_sub.subscribe_to = user_subscribe_to
-                        new_sub.save()
-
-            messages.add_message(request, messages.SUCCESS, 
+        self.subscriptions_formset = Subscriptions_formset(request.POST)
+        if self.subscriptions_formset.is_valid():
+            try:
+                self.apply_subscriptions_changes()
+            except Exception as ex:
+                messages.add_message(request, messages.ERROR, 
+                '''Произошла ошибка во время сохранения подписок! 
+                Подписки не сохранены! {}'''.format(ex))
+            else:
+                messages.add_message(request, messages.SUCCESS, 
                 'Подписки сохранены')
         else:
             messages.add_message(request, messages.WARNING, 
-                'Подписки не сохранены!')
+                'Подписки не сохранены! Проверьте заполнение полей.')
 
-        context = {'formset': subscriptions_formset}
+        context = {'formset': self.subscriptions_formset}
         return render(request, 'pages/subscriptions.html', context)
+
+    def apply_subscriptions_changes(self):
+        ''' Это метод решает задачу добавления только тех подписок, 
+        которые отсутствуют, и удаления тех, которые существуют. '''
+
+        for form in self.subscriptions_formset:
+            is_subscribe = form.cleaned_data['subscribe']
+            user_subscribe_to = User.objects.get( 
+                name=form.cleaned_data['username'] )
+            if is_subscribe:
+                if self.subscription_exists(user_subscribe_to):
+                    continue
+                else:
+                    self.create_new_subscription(user_subscribe_to)
+                    self.add_feed(user_subscribe_to)
+            else:
+                if self.subscription_exists(user_subscribe_to):
+                    self.delete_subscription(user_subscribe_to)
+                    self.delete_from_feed(user_subscribe_to)
+                else:
+                    continue
+
+    def subscription_exists(self, user_subscribe_to):
+        subs = Subscriptions.objects.filter(user=self.request.user)
+        subs = subs.filter(subscribe_to=user_subscribe_to)
+        return subs.exists()
+
+    def create_new_subscription(self, user_subscribe_to):
+        sub = Subscriptions()
+        sub.user = self.request.user
+        sub.subscribe_to = user_subscribe_to
+        sub.save()
+
+    def add_feed(self, user_subscribe_to):
+        posts = user_subscribe_to.posts.all()
+        new_feed = [ 
+            Feed(
+                user=self.request.user, 
+                post=one_post, 
+                read=False
+                ) 
+            for one_post in posts
+        ]
+        Feed.objects.bulk_create(new_feed)
+
+    def delete_subscription(self, user_subscribe_to):
+        sub = Subscriptions.objects.get(user=self.request.user, 
+            subscribe_to=user_subscribe_to)
+        sub.delete()
+                    
+    def delete_from_feed(self, user_subscribe_to):
+        feed_to_del = self.request.user.news_feed.all()
+        feed_to_del = feed_to_del.filter(post__author=user_subscribe_to)
+        feed_to_del.delete()

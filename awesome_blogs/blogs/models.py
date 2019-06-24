@@ -28,8 +28,11 @@ class Feed(models.Model):
 
     user = models.ForeignKey('users.User', on_delete=models.CASCADE,
         related_name='news_feed')
-    post = models.OneToOneField(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
     read = models.BooleanField()
+
+    class Meta:
+        unique_together = ('user', 'post')
 
 
 class Subscriptions(models.Model):
@@ -41,4 +44,8 @@ class Subscriptions(models.Model):
         on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'Подписка id=%s %s на блог %s' % (str(self.id), self.user.name, self.subscribe_to.name)
+        return 'Подписка id=%s %s на блог %s' % (
+            str(self.id), self.user.name, self.subscribe_to.name)
+
+    class Meta:
+        unique_together = ('user', 'subscribe_to')
