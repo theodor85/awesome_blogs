@@ -1,3 +1,6 @@
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+
 from .models import Post, Subscriptions, Feed
 
 # читать снизу вверх
@@ -14,7 +17,13 @@ def _refresh_feed(post):
 
 
 def _send_email_notifications(post):
-    pass
+    followers = _get_followers(post)
+    for follower in followers:
+        context = {'user': follower, 'post': post }
+        body_mail = render_to_string('pages/letter.txt', context)
+        subj = 'Пользователь, на которого вы подписаны, опубликовал новый пост!'
+        mailer = EmailMessage(subject=subj, body=body_mail, to=[follower.email])
+        mailer.send()
 
 
 def send_notifications_and_refresh_feed(sender, **kwargs):
