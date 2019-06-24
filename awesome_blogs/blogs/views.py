@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 
 from .models import Post, Subscriptions, Feed
-from .forms import Subscriptions_formset
+from .forms import Subscriptions_formset, PostForm
 from awesome_blogs.users.models import User
 
 
@@ -61,9 +61,30 @@ class MyPostsView(LoginRequiredMixin, UserPostList):
         return self.request.user.posts.all()
 
 
-class AddPostView(View):
+class AddPostView(LoginRequiredMixin, View):
     ''' Реализует добавление нового поста. '''
-    pass
+    
+    def get(self, request):
+        form = PostForm()
+        form.fields['title'].widget.attrs.update({'class': 'form-control'})
+        form.fields['content'].widget.attrs.update({'class': 'form-control'})
+        return render(request, 'pages/create_post.html', {'form': form})
+
+    def post(self, request):
+        form = PostForm(request.POST)
+        form.fields['title'].widget.attrs.update({'class': 'form-control'})
+        form.fields['content'].widget.attrs.update({'class': 'form-control'})
+        if form.is_valid():
+            new_post = form.save(commit=False)
+            new_post.author = request.user
+            new_post.save()
+            messages.add_message(request, messages.SUCCESS, 
+                'Пост успешно создан')
+            return render(request, 'pages/create_post.html', {'form': form})
+
+        messages.add_message(request, messages.WARNING, 
+                'Пост не создан!')
+        return render(request, 'pages/create_post.html', {'form': form})
 
 
 class DetailPostView(View):
