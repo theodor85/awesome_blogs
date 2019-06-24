@@ -30,11 +30,15 @@ class FeedView(LoginRequiredMixin, ListView):
         return feeds
 
 
-class UserPostsView(ListView):
-    ''' Выводит список постов одного пользователя. '''
+class UserPostList(ListView):
+    ''' Базовый класс для вывода списка постов одного пользователя
+     '''
     model = Post
     template_name = 'pages/post_list.html'
     context_object_name = 'posts'
+
+class UserPostsView(UserPostList):
+    ''' Выводит список постов одного пользователя. '''
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -45,11 +49,8 @@ class UserPostsView(ListView):
         return Post.objects.filter(author__name=self.kwargs['username'])
 
 
-class MyPostsView(LoginRequiredMixin, ListView):
+class MyPostsView(LoginRequiredMixin, UserPostList):
     ''' Выводит посты авторизованного пользователя. '''
-    model = Post
-    template_name = 'pages/post_list.html'
-    context_object_name = 'posts'
     
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
