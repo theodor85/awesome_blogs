@@ -9,6 +9,7 @@
 
     git clone https://github.com/theodor85/awesome_blogs.git
     cd awesome_blogs/awesome_blogs
+    docker-compose -f local.yml buld
     docker-compose -f local.yml up
 
 Затем введите в строке браузера:
